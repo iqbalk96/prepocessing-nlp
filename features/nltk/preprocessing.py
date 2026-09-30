@@ -8,7 +8,9 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 
 class NLPProcessor:
     def __init__(self):
-        self.stop_words = set(stopwords.words("indonesian"))
+        self.stop_words = set(
+            stopwords.words("indonesian")
+        )
 
         factory = StemmerFactory()
         self.stemmer = factory.create_stemmer()
@@ -24,6 +26,7 @@ class NLPProcessor:
         }
 
     def process(self, text: str) -> dict:
+
         # 1. Case Folding
         case_folding = text.lower()
 
@@ -63,7 +66,9 @@ class NLPProcessor:
         ]
 
         # 8. Remove Duplicate
-        unique_words = list(dict.fromkeys(normalized))
+        unique_words = list(
+            dict.fromkeys(normalized)
+        )
 
         return {
             "original_text": text,

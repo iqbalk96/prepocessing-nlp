@@ -1,21 +1,16 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from nlp.preprocessing import NLPProcessor
-from pypdf import PdfReader
-from io import BytesIO
+from features.nltk.router import router as nltk_router
+from features.information_retrieval.router import router as ir_router
 
 
 app = FastAPI(
-    title="Basic NLP API",
-    description="API untuk preprocessing teks menggunakan NLP",
+    title="NLP & Information Retrieval API",
+    description="API untuk NLP dan Information Retrieval",
     version="1.0.0",
 )
 
-
-# ==========================================
-# CORS
-# ==========================================
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,72 +21,22 @@ app.add_middleware(
 )
 
 
-processor = NLPProcessor()
+app.include_router(
+    nltk_router,
+    prefix="/api/nltk",
+    tags=["NLTK"],
+)
 
-
-# ==========================================
-# Health Check
-# ==========================================
+app.include_router(
+    ir_router,
+    prefix="/api/ir",
+    tags=["Information Retrieval"],
+)
 
 
 @app.get("/health")
 def health_check():
     return {
         "status": "ok",
-        "message": "NLP API is running",
+        "message": "API is running",
     }
-
-
-# ==========================================
-# PROCESS TEXT
-# ==========================================
-
-
-@app.post("/api/nlp/process-text")
-def process_text(text: str):
-    if not text.strip():
-        raise HTTPException(
-            status_code=400,
-            detail="Text tidak boleh kosong.",
-        )
-
-    return processor.process(text)
-
-
-# ==========================================
-# PROCESS PDF
-# ==========================================
-
-
-@app.post("/api/nlp/process-pdf")
-async def process_pdf(file: UploadFile = File(...)):
-
-    if file.content_type != "application/pdf":
-        raise HTTPException(
-            status_code=400,
-            detail="File harus berupa PDF.",
-        )
-
-    content = await file.read()
-
-    reader = PdfReader(BytesIO(content))
-
-    text = ""
-
-    for page in reader.pages:
-        page_text = page.extract_text()
-
-        if page_text:
-            text += page_text + "\n"
-
-    text = text.strip()
-
-    if not text:
-        raise HTTPException(
-            status_code=400,
-            detail="Tidak dapat mengekstrak text dari PDF.",
-        )
-
-    result = processor.process(text)
-
-    return result
