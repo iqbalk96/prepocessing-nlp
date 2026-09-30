@@ -2,7 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from features.nltk.router import router as nltk_router
-from features.information_retrieval.router import router as ir_router
+from features.information_retrieval.router import (
+    router as ir_router,
+)
 
 
 app = FastAPI(
